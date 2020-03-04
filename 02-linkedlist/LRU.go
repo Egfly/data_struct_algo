@@ -28,7 +28,7 @@ func NewLRUNode(v interface{}) *LRUNode {
 
 func NewLRU(max int) *LRU {
 	return &LRU{
-		head:      NewLRUNode(nil),
+		head:      NewLRUNode(0),
 		length:    0,
 		maxLength: max,
 	}
@@ -40,8 +40,8 @@ func (list *LRU) Find(v interface{}) (pre, cur *LRUNode) {
 		return nil, nil
 	}
 
-	pre = nil
-	cur = list.head
+	pre = list.head
+	cur = list.head.next
 	for cur != nil {
 		if cur.data == v {
 			break
@@ -49,19 +49,13 @@ func (list *LRU) Find(v interface{}) (pre, cur *LRUNode) {
 		pre = cur
 		cur = cur.next
 	}
-	if cur == nil {
-		pre = nil
-	}
+
 	return
 }
 
 func (list *LRU) Delete(pre, cur *LRUNode) bool {
 	if cur == nil {
 		return false
-	}
-	if pre == nil {
-		list.head = nil
-		list.length = 0
 	}
 
 	pre.next = cur.next
@@ -70,21 +64,14 @@ func (list *LRU) Delete(pre, cur *LRUNode) bool {
 }
 
 func (list *LRU) InsertToHead(node *LRUNode) bool {
-	//缓存空间为空
-	if list.length == 0 {
-		list.head = node
-		list.length++
-		return true
-	}
-
 	//缓存空间已满
 	if list.length == list.maxLength {
 		return false
 	}
-	newNode := node
-	oldHead := list.head
-	newNode.next = oldHead
-	list.head = newNode
+
+	oldNode := list.head.next
+	node.next = oldNode
+	list.head.next = node
 	list.length++
 	return true
 }
