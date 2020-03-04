@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 /**
 LRU 缓存淘汰机制单链表实现（非最佳实现）
 LRU:LRU 是 Least Recently Used 的缩写，这种算法认为最近使用的数据是热门数据，下一次很大概率将会再次被使用。
@@ -12,8 +14,8 @@ type LRUNode struct {
 }
 
 type LRU struct {
-	head   *LRUNode
-	length int
+	head      *LRUNode
+	length    int
 	maxLength int
 }
 
@@ -26,8 +28,8 @@ func NewLRUNode(v interface{}) *LRUNode {
 
 func NewLRU(max int) *LRU {
 	return &LRU{
-		head:   NewLRUNode(nil),
-		length: 0,
+		head:      NewLRUNode(nil),
+		length:    0,
 		maxLength: max,
 	}
 }
@@ -47,6 +49,9 @@ func (list *LRU) Find(v interface{}) (pre, cur *LRUNode) {
 		pre = cur
 		cur = cur.next
 	}
+	if cur == nil {
+		pre = nil
+	}
 	return
 }
 
@@ -63,7 +68,6 @@ func (list *LRU) Delete(pre, cur *LRUNode) bool {
 	list.length--
 	return true
 }
-
 
 func (list *LRU) InsertToHead(node *LRUNode) bool {
 	//缓存空间为空
@@ -82,14 +86,14 @@ func (list *LRU) InsertToHead(node *LRUNode) bool {
 	newNode.next = oldHead
 	list.head = newNode
 	list.length++
-	return  true
+	return true
 }
 
 //删除最少用的缓存
 func (list *LRU) DeleteTail() {
 	pre := list.head
 	cur := list.head.next
-	for cur != nil {
+	for cur.next != nil {
 		pre = cur
 		cur = cur.next
 	}
@@ -99,10 +103,12 @@ func (list *LRU) DeleteTail() {
 
 func (list *LRU) Read(v interface{}) {
 	pre, cur := list.Find(v)
+	
 	// 缓存存在
 	if cur != nil {
 		list.Delete(pre, cur)
 		list.InsertToHead(cur)
+		return
 	}
 
 	//缓存空间已满，删除最少访问的缓存
@@ -110,4 +116,19 @@ func (list *LRU) Read(v interface{}) {
 		list.DeleteTail()
 	}
 	list.InsertToHead(NewLRUNode(v))
+	return
+}
+
+func (list *LRU) Print() {
+	cur := list.head
+	str := ""
+	for cur != nil {
+		str += fmt.Sprintf("%+v", cur.data)
+		cur = cur.next
+		if cur != nil {
+			str += "->"
+		}
+	}
+
+	fmt.Println(str)
 }
